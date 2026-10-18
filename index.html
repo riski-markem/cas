@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <title>Catatan Keuangan</title>
-<meta name="description" content="Pencatatan kas, hutang dan investasi harian">
 <meta name="theme-color" content="#047857">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,341 +15,318 @@
 <style>
 :root {
     --bg: #f1f5f9;
-    --card: #ffffff;
     --teks: #0f172a;
-    --teks-redup: #64748b;
+    --redup: #64748b;
     --garis: #e2e8f0;
     --hijau: #059669;
     --hijau-tua: #047857;
     --merah: #e11d48;
     --biru: #2563eb;
     --ungu: #4f46e5;
+    --nav: 58px;
     --safe-atas: env(safe-area-inset-top, 0px);
     --safe-bawah: env(safe-area-inset-bottom, 0px);
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html { -webkit-text-size-adjust: 100%; }
+html, body { height: 100%; }
 body {
     margin: 0;
     background: var(--bg);
     color: var(--teks);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
     font-size: 15px;
     line-height: 1.4;
-    min-height: 100vh;
-    min-height: 100dvh;
-    overscroll-behavior-y: none;
+    overflow: hidden;
+    overscroll-behavior: none;
     -webkit-user-select: none;
     user-select: none;
+    -webkit-text-size-adjust: 100%;
 }
 input, button { font: inherit; }
 input { -webkit-user-select: text; user-select: text; }
-.app { max-width: 480px; margin: 0 auto; padding-bottom: calc(84px + var(--safe-bawah)); }
-.topbar {
-    background: linear-gradient(135deg, var(--hijau-tua), #0f766e);
-    color: #fff;
-    padding: calc(18px + var(--safe-atas)) 18px 64px;
-    border-radius: 0 0 28px 28px;
+.tersembunyi { display: none !important; }
+
+.kunci {
+    position: fixed; inset: 0; z-index: 100;
+    background: linear-gradient(160deg, #047857, #0f766e 70%, #115e59);
+    color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: calc(20px + var(--safe-atas)) 20px calc(20px + var(--safe-bawah));
 }
-.topbar h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.2px; }
-.topbar p { margin: 2px 0 0; font-size: 12px; opacity: .8; }
-.konten { padding: 0 14px; margin-top: -44px; display: flex; flex-direction: column; gap: 14px; }
-.seksi { display: none; flex-direction: column; gap: 14px; }
+.kunci h2 { margin: 10px 0 18px; font-size: 17px; font-weight: 600; opacity: .95; }
+.kunci .gembok { font-size: 40px; }
+.titik-baris { display: flex; gap: 16px; margin-bottom: 30px; }
+.titik-baris.goyang { animation: goyang .4s; }
+.titik { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .8); transition: background .1s; }
+.titik.isi { background: #fff; }
+.tuts { display: grid; grid-template-columns: repeat(3, 74px); gap: 14px 22px; }
+.tuts button {
+    width: 74px; height: 74px; border-radius: 50%; border: 0;
+    background: rgba(255, 255, 255, .14); color: #fff; font-size: 26px; font-weight: 600;
+    transition: background .1s;
+}
+.tuts button:active { background: rgba(255, 255, 255, .34); }
+.tuts .kosong-tuts { background: transparent; pointer-events: none; }
+.tuts .hapus-tuts { background: transparent; font-size: 22px; }
+@keyframes goyang {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-10px); }
+    40% { transform: translateX(10px); }
+    60% { transform: translateX(-8px); }
+    80% { transform: translateX(8px); }
+}
+
+.app { height: 100dvh; max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; position: relative; background: var(--bg); }
+.dasbor {
+    background: linear-gradient(150deg, #047857, #0f766e);
+    padding: calc(14px + var(--safe-atas)) 12px 16px;
+    border-radius: 0 0 24px 24px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    flex: 0 0 auto;
+}
+.stat { background: rgba(255, 255, 255, .15); border-radius: 16px; padding: 11px 13px; color: #fff; min-width: 0; }
+.stat small { display: block; font-size: 11px; font-weight: 600; opacity: .85; }
+.stat b { display: block; font-size: 18px; font-weight: 800; letter-spacing: -.3px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+.stat.utama { background: #fff; color: var(--hijau-tua); }
+.stat.utama small { color: var(--redup); opacity: 1; }
+.stat.hutang b { color: #fecdd3; }
+.stat b.minus { color: #fecdd3; }
+.stat.utama b.minus { color: var(--merah); }
+
+.isi { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 12px 12px 0; }
+.seksi { display: none; flex: 1; min-height: 0; flex-direction: column; background: #fff; border-radius: 20px 20px 0 0; overflow: hidden; box-shadow: 0 -1px 3px rgba(15, 23, 42, .05); }
 .seksi.aktif { display: flex; animation: muncul .18s ease-out; }
 @keyframes muncul { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-.kartu {
-    background: var(--card);
-    border-radius: 18px;
-    padding: 16px;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, .06), 0 4px 14px rgba(15, 23, 42, .04);
-}
-.kartu h2 { margin: 0 0 12px; font-size: 15px; font-weight: 700; }
-.kartu-judul { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.kartu-judul h2 { margin: 0; }
-.saldo { text-align: center; padding: 18px 16px 14px; }
-.saldo .label { font-size: 12px; color: var(--teks-redup); font-weight: 500; }
-.saldo .nilai { display: block; font-size: 28px; font-weight: 800; letter-spacing: -0.6px; margin: 2px 0 12px; color: var(--teks); }
-.saldo .nilai.minus { color: var(--merah); }
-.saldo .nilai.ungu { color: var(--ungu); }
-.ringkas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border-top: 1px solid var(--garis); padding-top: 12px; }
-.ringkas div { text-align: center; }
-.ringkas small { display: block; font-size: 11px; color: var(--teks-redup); font-weight: 500; }
-.ringkas b { font-size: 14px; }
+.kepala { padding: 14px 16px 10px; flex: 0 0 auto; border-bottom: 1px solid var(--garis); }
+.kepala-baris { display: flex; justify-content: space-between; align-items: center; }
+.kepala h2 { margin: 0; font-size: 15px; font-weight: 700; }
+.ringkas { margin-top: 3px; font-size: 12px; color: var(--redup); }
+.ringkas b { font-weight: 700; }
 .hijau { color: var(--hijau); }
 .merah { color: var(--merah); }
-.biru { color: var(--biru); }
 .ungu { color: var(--ungu); }
-.segmen { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 4px; background: #f1f5f9; border-radius: 14px; margin-bottom: 12px; }
-.segmen button {
-    border: 0; background: transparent; color: var(--teks-redup);
-    padding: 11px 6px; border-radius: 10px; font-size: 13px; font-weight: 600;
-    transition: background .15s, color .15s;
-}
-.segmen button.on-hijau { background: var(--hijau); color: #fff; box-shadow: 0 2px 6px rgba(5, 150, 105, .35); }
-.segmen button.on-merah { background: var(--merah); color: #fff; box-shadow: 0 2px 6px rgba(225, 29, 72, .35); }
-.field { margin-bottom: 12px; }
-.field label { display: block; font-size: 12px; font-weight: 600; color: var(--teks-redup); margin-bottom: 5px; }
-.field input {
-    width: 100%; padding: 13px 14px; font-size: 16px;
-    border: 1.5px solid var(--garis); border-radius: 12px; background: #fff; color: var(--teks);
-    outline: none; transition: border-color .15s, box-shadow .15s;
-}
-.field input:focus { border-color: var(--biru); box-shadow: 0 0 0 3px rgba(37, 99, 235, .15); }
-.rp { position: relative; }
-.rp span { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-weight: 600; color: var(--teks-redup); font-size: 15px; }
-.rp input { padding-left: 42px; }
-.tombol {
-    width: 100%; border: 0; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 700; color: #fff;
-    transition: transform .08s, filter .15s;
-}
-.tombol:active { transform: scale(.98); filter: brightness(.95); }
-.tombol.hijau-bg { background: var(--hijau); }
-.tombol.merah-bg { background: var(--merah); }
-.tombol.ungu-bg { background: var(--ungu); }
-.tombol.biru-bg { background: var(--biru); }
-.tombol.abu { background: #e2e8f0; color: var(--teks); }
-.tombol.garis { background: #fff; color: var(--biru); border: 1.5px solid var(--biru); }
-.link-bahaya { border: 0; background: transparent; color: var(--merah); font-size: 12px; font-weight: 600; padding: 6px 4px; }
+.link-bahaya { border: 0; background: transparent; color: var(--merah); font-size: 12px; font-weight: 600; padding: 4px; }
+.gulir { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 0 16px calc(90px + var(--safe-bawah) * 0); }
 .daftar { list-style: none; margin: 0; padding: 0; }
-.baris { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--garis); }
+.baris { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid var(--garis); }
 .baris:last-child { border-bottom: 0; }
-.ikon {
-    flex: 0 0 38px; height: 38px; border-radius: 12px; display: grid; place-items: center;
-    font-size: 16px; font-weight: 800;
-}
+.ikon { flex: 0 0 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; font-size: 15px; font-weight: 800; }
 .ikon.masuk { background: #d1fae5; color: var(--hijau-tua); }
 .ikon.keluar { background: #ffe4e6; color: var(--merah); }
 .ikon.aset { background: #e0e7ff; color: var(--ungu); }
 .info { flex: 1; min-width: 0; }
 .info .judul { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.info .sub { font-size: 11px; color: var(--teks-redup); margin-top: 1px; }
-.info .coret { text-decoration: line-through; }
+.info .sub { font-size: 11px; color: var(--redup); margin-top: 1px; }
+.coret { text-decoration: line-through; }
 .sisi { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
-.jumlah { font-weight: 700; font-size: 14px; white-space: nowrap; }
-.hapus {
-    border: 0; background: #f1f5f9; color: var(--teks-redup); width: 30px; height: 30px; border-radius: 9px;
-    font-size: 13px; display: grid; place-items: center; padding: 0;
-}
+.jumlah { font-weight: 700; font-size: 13.5px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.hapus { border: 0; background: #f1f5f9; color: var(--redup); width: 30px; height: 30px; border-radius: 9px; font-size: 12px; display: grid; place-items: center; padding: 0; }
 .hapus:active { background: #ffe4e6; color: var(--merah); }
 .aksi-kecil { border: 0; border-radius: 9px; padding: 7px 11px; font-size: 12px; font-weight: 700; background: var(--biru); color: #fff; }
 .aksi-kecil.batal { background: #e2e8f0; color: var(--teks); }
 .lencana { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; margin-left: 6px; vertical-align: 1px; }
 .lencana.hutang { background: #ffe4e6; color: #be123c; }
 .lencana.piutang { background: #d1fae5; color: #047857; }
-.kosong { text-align: center; padding: 26px 8px; color: #94a3b8; font-size: 13px; }
+.kosong { text-align: center; padding: 34px 8px; color: #94a3b8; font-size: 13px; }
 .kosong i { display: block; font-style: normal; font-size: 30px; margin-bottom: 6px; }
-.catatan { background: #eff6ff; color: #1d4ed8; font-size: 12px; padding: 10px 12px; border-radius: 12px; margin: 0 0 8px; }
-.baris-info { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--garis); font-size: 13px; }
-.baris-info:last-of-type { border-bottom: 0; }
-.baris-info span:first-child { color: var(--teks-redup); }
-.baris-info span:last-child { font-weight: 600; text-align: right; }
-.tumpukan { display: flex; flex-direction: column; gap: 10px; }
-.teks-kecil { font-size: 12px; color: var(--teks-redup); margin: 10px 0 0; }
-.nav {
-    position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
-    background: rgba(255, 255, 255, .96); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    border-top: 1px solid var(--garis);
-    padding-bottom: var(--safe-bawah);
+
+.navbawah {
+    flex: 0 0 auto; background: #fff; border-top: 1px solid var(--garis);
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    padding-bottom: var(--safe-bawah); height: calc(var(--nav) + var(--safe-bawah));
 }
-.nav-isi { max-width: 480px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); }
-.nav button {
-    border: 0; background: transparent; padding: 9px 4px 8px; color: #94a3b8;
-    display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; font-weight: 600;
+.navbawah button { border: 0; background: transparent; color: #94a3b8; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; font-size: 11px; font-weight: 600; }
+.navbawah .e { font-size: 21px; filter: grayscale(1); opacity: .6; transition: transform .15s; }
+.navbawah button.aktif { color: var(--hijau-tua); }
+.navbawah button.aktif .e { filter: none; opacity: 1; transform: scale(1.08); }
+.fab {
+    position: absolute; right: 16px; bottom: calc(var(--nav) + var(--safe-bawah) + 14px);
+    width: 56px; height: 56px; border-radius: 50%; border: 0; background: var(--hijau); color: #fff;
+    font-size: 30px; line-height: 1; display: grid; place-items: center; padding: 0 0 3px;
+    box-shadow: 0 6px 16px rgba(5, 150, 105, .45); z-index: 10; transition: transform .1s;
 }
-.nav button .e { font-size: 21px; filter: grayscale(1); opacity: .6; transition: transform .15s; }
-.nav button.aktif { color: var(--hijau-tua); }
-.nav button.aktif .e { filter: none; opacity: 1; transform: translateY(-1px) scale(1.08); }
-.modal {
-    position: fixed; inset: 0; z-index: 50; background: rgba(15, 23, 42, .5);
-    display: none; align-items: flex-end; justify-content: center; padding: 14px;
-    padding-bottom: calc(14px + var(--safe-bawah));
-}
+.fab:active { transform: scale(.92); }
+
+.lapis { position: fixed; inset: 0; z-index: 60; background: rgba(15, 23, 42, .5); display: none; align-items: flex-end; justify-content: center; }
+.lapis.tampil { display: flex; }
+.lembar { background: #fff; width: 100%; max-width: 480px; border-radius: 24px 24px 0 0; padding: 16px 16px calc(16px + var(--safe-bawah)); max-height: 92dvh; overflow-y: auto; animation: naik .22s ease-out; }
+@keyframes naik { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+.lembar-kepala { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.lembar-kepala h3 { margin: 0; font-size: 17px; }
+.segmen { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 4px; background: #f1f5f9; border-radius: 14px; margin-bottom: 12px; }
+.segmen button { border: 0; background: transparent; color: var(--redup); padding: 11px 6px; border-radius: 10px; font-size: 13px; font-weight: 600; transition: background .15s, color .15s; }
+.segmen button.on-hijau { background: var(--hijau); color: #fff; box-shadow: 0 2px 6px rgba(5, 150, 105, .35); }
+.segmen button.on-merah { background: var(--merah); color: #fff; box-shadow: 0 2px 6px rgba(225, 29, 72, .35); }
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 12px; font-weight: 600; color: var(--redup); margin-bottom: 5px; }
+.field input { width: 100%; padding: 13px 14px; font-size: 16px; border: 1.5px solid var(--garis); border-radius: 12px; background: #fff; color: var(--teks); outline: none; transition: border-color .15s, box-shadow .15s; }
+.field input:focus { border-color: var(--biru); box-shadow: 0 0 0 3px rgba(37, 99, 235, .15); }
+.rp { position: relative; }
+.rp span { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-weight: 600; color: var(--redup); font-size: 15px; }
+.rp input { padding-left: 42px; }
+.tombol { width: 100%; border: 0; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 700; color: #fff; transition: transform .08s, filter .15s; }
+.tombol:active { transform: scale(.98); filter: brightness(.95); }
+.hijau-bg { background: var(--hijau); }
+.merah-bg { background: var(--merah); }
+.ungu-bg { background: var(--ungu); }
+.tombol.abu { background: #e2e8f0; color: var(--teks); }
+.tutup { border: 0; background: #f1f5f9; color: var(--redup); width: 32px; height: 32px; border-radius: 10px; font-size: 14px; padding: 0; }
+.chip-baris { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.chip { border: 1.5px solid #c7d2fe; background: #eef2ff; color: var(--ungu); border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 700; }
+.petunjuk { margin: -4px 0 12px; font-size: 12px; color: var(--redup); min-height: 17px; }
+.petunjuk b { color: var(--ungu); }
+
+.modal { position: fixed; inset: 0; z-index: 90; background: rgba(15, 23, 42, .5); display: none; align-items: center; justify-content: center; padding: 20px; }
 .modal.tampil { display: flex; }
-.modal-kotak { background: #fff; border-radius: 22px; width: 100%; max-width: 440px; padding: 20px; animation: naik .2s ease-out; }
-@keyframes naik { from { transform: translateY(30px); opacity: 0; } to { transform: none; opacity: 1; } }
+.modal-kotak { background: #fff; border-radius: 22px; width: 100%; max-width: 400px; padding: 20px; animation: naik .2s ease-out; }
 .modal-kotak h3 { margin: 0 0 6px; font-size: 17px; }
-.modal-kotak p { margin: 0 0 16px; color: var(--teks-redup); font-size: 14px; }
+.modal-kotak p { margin: 0 0 16px; color: var(--redup); font-size: 14px; }
 .modal-aksi { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.toast {
-    position: fixed; left: 50%; bottom: calc(92px + var(--safe-bawah)); transform: translate(-50%, 20px);
-    background: #0f172a; color: #fff; padding: 10px 16px; border-radius: 12px; font-size: 13px; font-weight: 500;
-    opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 60; max-width: 90%; text-align: center;
-}
+.toast { position: fixed; left: 50%; bottom: calc(var(--nav) + var(--safe-bawah) + 84px); transform: translate(-50%, 20px); background: #0f172a; color: #fff; padding: 10px 16px; border-radius: 12px; font-size: 13px; font-weight: 500; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 95; max-width: 90%; text-align: center; }
 .toast.tampil { opacity: 1; transform: translate(-50%, 0); }
-.tersembunyi { display: none !important; }
 @media (min-width: 520px) {
-    body { padding: 18px 0; }
-    .app { border-radius: 28px; overflow: hidden; background: var(--bg); box-shadow: 0 10px 40px rgba(15, 23, 42, .12); min-height: calc(100vh - 36px); }
-    .nav-isi { border-radius: 0; }
-}
-@media (display-mode: standalone) {
-    body { padding: 0; }
-    .app { border-radius: 0; box-shadow: none; min-height: 100dvh; }
+    .app { box-shadow: 0 0 40px rgba(15, 23, 42, .12); }
 }
 </style>
 </head>
 <body>
 
-<div class="app">
-    <header class="topbar">
-        <h1>💰 Catatan Keuangan</h1>
-        <p>Kas, hutang &amp; investasi harian</p>
+<div id="kunci" class="kunci">
+    <div class="gembok">🔒</div>
+    <h2>Masukkan PIN</h2>
+    <div id="titik-pin" class="titik-baris">
+        <span class="titik"></span><span class="titik"></span><span class="titik"></span><span class="titik"></span>
+    </div>
+    <div class="tuts">
+        <button type="button" onclick="tekanPin('1')">1</button>
+        <button type="button" onclick="tekanPin('2')">2</button>
+        <button type="button" onclick="tekanPin('3')">3</button>
+        <button type="button" onclick="tekanPin('4')">4</button>
+        <button type="button" onclick="tekanPin('5')">5</button>
+        <button type="button" onclick="tekanPin('6')">6</button>
+        <button type="button" onclick="tekanPin('7')">7</button>
+        <button type="button" onclick="tekanPin('8')">8</button>
+        <button type="button" onclick="tekanPin('9')">9</button>
+        <button type="button" class="kosong-tuts" tabindex="-1"></button>
+        <button type="button" onclick="tekanPin('0')">0</button>
+        <button type="button" class="hapus-tuts" onclick="hapusPin()" aria-label="Hapus angka">⌫</button>
+    </div>
+</div>
+
+<div id="app" class="app tersembunyi">
+    <header class="dasbor">
+        <div class="stat"><small>Saldo Kas</small><b id="d-saldo">Rp 0</b></div>
+        <div class="stat hutang"><small>Hutang</small><b id="d-hutang">Rp 0</b></div>
+        <div class="stat utama"><small>Saldo Bersih</small><b id="d-bersih">Rp 0</b></div>
+        <div class="stat"><small>Total Investasi</small><b id="d-investasi">Rp 0</b></div>
     </header>
 
-    <main class="konten">
-
+    <main class="isi">
         <section id="section-kas" class="seksi aktif">
-            <div class="kartu saldo">
-                <span class="label">Sisa Saldo</span>
-                <span id="sisa-saldo" class="nilai">Rp 0</span>
-                <div class="ringkas">
-                    <div><small>Pemasukan</small><b id="total-masuk" class="hijau">Rp 0</b></div>
-                    <div><small>Pengeluaran</small><b id="total-keluar" class="merah">Rp 0</b></div>
-                </div>
-            </div>
-
-            <div class="kartu">
-                <h2>Tambah Transaksi</h2>
-                <form id="form-transaksi" autocomplete="off">
-                    <div class="segmen">
-                        <button type="button" id="btn-pemasukan" onclick="pilihJenis('pemasukan')" class="on-hijau">+ Pemasukan</button>
-                        <button type="button" id="btn-pengeluaran" onclick="pilihJenis('pengeluaran')">− Pengeluaran</button>
-                    </div>
-                    <div class="field">
-                        <label for="keterangan">Keterangan</label>
-                        <input type="text" id="keterangan" placeholder="Gaji, makan siang, bensin" maxlength="60" required enterkeyhint="next">
-                    </div>
-                    <div class="field">
-                        <label for="jumlah">Jumlah</label>
-                        <div class="rp"><span>Rp</span><input type="text" id="jumlah" inputmode="numeric" placeholder="10.000" required enterkeyhint="done"></div>
-                    </div>
-                    <button type="submit" id="btn-submit" class="tombol hijau-bg">+ Simpan Pemasukan</button>
-                </form>
-            </div>
-
-            <div class="kartu">
-                <div class="kartu-judul">
-                    <h2>Riwayat Transaksi</h2>
+            <div class="kepala">
+                <div class="kepala-baris">
+                    <h2>Riwayat Kas</h2>
                     <button type="button" id="btn-reset" class="link-bahaya">Hapus Semua</button>
                 </div>
+                <div class="ringkas">Masuk <b id="total-masuk" class="hijau">Rp 0</b> · Keluar <b id="total-keluar" class="merah">Rp 0</b></div>
+            </div>
+            <div class="gulir">
                 <ul id="daftar-transaksi" class="daftar"></ul>
                 <div id="empty-state" class="kosong"><i>🧾</i>Belum ada transaksi.</div>
             </div>
         </section>
 
         <section id="section-hutang" class="seksi">
-            <div class="kartu saldo">
-                <span class="label">Hutang Belum Lunas (Bersih)</span>
-                <span id="selisih-hutang" class="nilai">Rp 0</span>
-                <div class="ringkas">
-                    <div><small>Saya Berhutang</small><b id="total-hutang-saya" class="merah">Rp 0</b></div>
-                    <div><small>Orang Hutang ke Saya</small><b id="total-piutang-saya" class="hijau">Rp 0</b></div>
-                </div>
-            </div>
-
-            <div class="kartu">
-                <h2>Tambah Catatan Hutang</h2>
-                <form id="form-hutang" autocomplete="off">
-                    <div class="segmen">
-                        <button type="button" id="btn-saya-hutang" onclick="pilihJenisHutang('hutang')" class="on-merah">Saya Berhutang</button>
-                        <button type="button" id="btn-piutang" onclick="pilihJenisHutang('piutang')">Piutang</button>
-                    </div>
-                    <div class="field">
-                        <label for="nama-hutang">Nama / Keterangan</label>
-                        <input type="text" id="nama-hutang" placeholder="Budi, pinjam teman" maxlength="60" required enterkeyhint="next">
-                    </div>
-                    <div class="field">
-                        <label for="jumlah-hutang">Jumlah</label>
-                        <div class="rp"><span>Rp</span><input type="text" id="jumlah-hutang" inputmode="numeric" placeholder="50.000" required enterkeyhint="done"></div>
-                    </div>
-                    <button type="submit" id="btn-submit-hutang" class="tombol merah-bg">+ Simpan Saya Berhutang</button>
-                </form>
-            </div>
-
-            <div class="kartu">
-                <div class="kartu-judul">
-                    <h2>Daftar Hutang &amp; Piutang</h2>
+            <div class="kepala">
+                <div class="kepala-baris">
+                    <h2>Hutang &amp; Piutang</h2>
                     <button type="button" id="btn-reset-hutang" class="link-bahaya">Hapus Semua</button>
                 </div>
-                <p class="catatan">💡 Tombol Bayar / Terima otomatis mencatat ke kas. Tombol Batal mengembalikannya.</p>
+                <div class="ringkas">Orang hutang ke saya <b id="total-piutang-saya" class="hijau">Rp 0</b></div>
+            </div>
+            <div class="gulir">
                 <ul id="daftar-hutang" class="daftar"></ul>
                 <div id="empty-state-hutang" class="kosong"><i>🤝</i>Belum ada catatan hutang.</div>
             </div>
         </section>
 
         <section id="section-investasi" class="seksi">
-            <div class="kartu saldo">
-                <span class="label">Total Nilai Portofolio</span>
-                <span id="total-investasi" class="nilai ungu">Rp 0</span>
-                <div class="ringkas" style="grid-template-columns:1fr">
-                    <div><small>Jumlah Aset</small><b id="jumlah-aset" class="ungu">0</b></div>
-                </div>
-            </div>
-
-            <div class="kartu">
-                <h2>Tambah Investasi</h2>
-                <form id="form-investasi" autocomplete="off">
-                    <div class="field">
-                        <label for="nama-investasi">Aset</label>
-                        <input type="text" id="nama-investasi" placeholder="Emas, saham BBCA, reksa dana" maxlength="60" required enterkeyhint="next">
-                    </div>
-                    <div class="field">
-                        <label for="jumlah-investasi">Nilai</label>
-                        <div class="rp"><span>Rp</span><input type="text" id="jumlah-investasi" inputmode="numeric" placeholder="100.000" required enterkeyhint="done"></div>
-                    </div>
-                    <button type="submit" class="tombol ungu-bg">+ Tambah ke Portofolio</button>
-                </form>
-            </div>
-
-            <div class="kartu">
-                <div class="kartu-judul">
-                    <h2>Portofolio Saya</h2>
+            <div class="kepala">
+                <div class="kepala-baris">
+                    <h2>Portofolio</h2>
                     <button type="button" id="btn-reset-investasi" class="link-bahaya">Hapus Semua</button>
                 </div>
+                <div class="ringkas"><b id="jumlah-aset" class="ungu">0</b> aset</div>
+            </div>
+            <div class="gulir">
                 <ul id="daftar-investasi" class="daftar"></ul>
                 <div id="empty-state-investasi" class="kosong"><i>📈</i>Belum ada aset.</div>
             </div>
         </section>
-
-        <section id="section-data" class="seksi">
-            <div class="kartu" id="kartu-pasang">
-                <h2>Pasang di HP</h2>
-                <p id="status-pasang" class="teks-kecil" style="margin:0 0 12px">Pasang aplikasi ke layar utama agar terbuka seperti aplikasi biasa dan bisa dipakai tanpa internet.</p>
-                <button type="button" id="btn-pasang" class="tombol biru-bg tersembunyi">⬇ Pasang Aplikasi</button>
-                <p id="petunjuk-ios" class="catatan tersembunyi" style="margin:0">Di iPhone: buka lewat Safari, ketuk tombol Bagikan, lalu pilih <b>Tambah ke Layar Utama</b>.</p>
-            </div>
-
-            <div class="kartu">
-                <h2>Penyimpanan di HP</h2>
-                <div class="baris-info"><span>Lokasi data</span><span>Memori perangkat ini</span></div>
-                <div class="baris-info"><span>Transaksi kas</span><span id="info-kas">0</span></div>
-                <div class="baris-info"><span>Catatan hutang</span><span id="info-hutang">0</span></div>
-                <div class="baris-info"><span>Aset investasi</span><span id="info-investasi">0</span></div>
-                <div class="baris-info"><span>Perlindungan data</span><span id="info-persist">Memeriksa…</span></div>
-                <p class="teks-kecil">Data tidak dikirim ke server mana pun. Menghapus data situs atau mencopot aplikasi dapat menghapus catatan, jadi buat cadangan secara berkala.</p>
-            </div>
-
-            <div class="kartu">
-                <h2>Cadangan Data</h2>
-                <div class="tumpukan">
-                    <button type="button" id="btn-ekspor" class="tombol hijau-bg">⬆ Simpan Cadangan (.json)</button>
-                    <button type="button" id="btn-impor" class="tombol garis">⬇ Pulihkan dari Cadangan</button>
-                    <input type="file" id="file-impor" accept="application/json,.json" class="tersembunyi">
-                </div>
-            </div>
-        </section>
-
     </main>
-</div>
 
-<nav class="nav">
-    <div class="nav-isi">
+    <button type="button" class="fab" onclick="bukaForm()" aria-label="Tambah">+</button>
+
+    <nav class="navbawah">
         <button type="button" id="tab-kas" onclick="pilihTab('kas')" class="aktif"><span class="e">💵</span>Kas</button>
         <button type="button" id="tab-hutang" onclick="pilihTab('hutang')"><span class="e">🤝</span>Hutang</button>
         <button type="button" id="tab-investasi" onclick="pilihTab('investasi')"><span class="e">📈</span>Investasi</button>
-        <button type="button" id="tab-data" onclick="pilihTab('data')"><span class="e">⚙️</span>Data</button>
+    </nav>
+</div>
+
+<div id="lapis" class="lapis">
+    <div class="lembar">
+        <div class="lembar-kepala">
+            <h3 id="judul-form">Tambah</h3>
+            <button type="button" class="tutup" onclick="tutupForm()" aria-label="Tutup">✕</button>
+        </div>
+
+        <form id="form-transaksi" autocomplete="off">
+            <div class="segmen">
+                <button type="button" id="btn-pemasukan" onclick="pilihJenis('pemasukan')" class="on-hijau">+ Pemasukan</button>
+                <button type="button" id="btn-pengeluaran" onclick="pilihJenis('pengeluaran')">− Pengeluaran</button>
+            </div>
+            <div class="field">
+                <label for="keterangan">Keterangan</label>
+                <input type="text" id="keterangan" placeholder="Gaji, makan siang, bensin" maxlength="60" required enterkeyhint="next">
+            </div>
+            <div class="field">
+                <label for="jumlah">Jumlah</label>
+                <div class="rp"><span>Rp</span><input type="text" id="jumlah" inputmode="numeric" placeholder="10.000" required enterkeyhint="done"></div>
+            </div>
+            <button type="submit" id="btn-submit" class="tombol hijau-bg">+ Simpan Pemasukan</button>
+        </form>
+
+        <form id="form-hutang" class="tersembunyi" autocomplete="off">
+            <div class="segmen">
+                <button type="button" id="btn-saya-hutang" onclick="pilihJenisHutang('hutang')" class="on-merah">Saya Berhutang</button>
+                <button type="button" id="btn-piutang" onclick="pilihJenisHutang('piutang')">Piutang</button>
+            </div>
+            <div class="field">
+                <label for="nama-hutang">Nama / Keterangan</label>
+                <input type="text" id="nama-hutang" placeholder="Budi, pinjam teman" maxlength="60" required enterkeyhint="next">
+            </div>
+            <div class="field">
+                <label for="jumlah-hutang">Jumlah</label>
+                <div class="rp"><span>Rp</span><input type="text" id="jumlah-hutang" inputmode="numeric" placeholder="50.000" required enterkeyhint="done"></div>
+            </div>
+            <button type="submit" id="btn-submit-hutang" class="tombol merah-bg">+ Simpan Saya Berhutang</button>
+        </form>
+
+        <form id="form-investasi" class="tersembunyi" autocomplete="off">
+            <div id="chip-aset" class="chip-baris tersembunyi"></div>
+            <div class="field">
+                <label for="nama-investasi">Nama Aset</label>
+                <input type="text" id="nama-investasi" placeholder="Zeus, emas, saham BBCA" maxlength="60" required enterkeyhint="next">
+            </div>
+            <p id="petunjuk-investasi" class="petunjuk"></p>
+            <div class="field">
+                <label for="jumlah-investasi">Uang yang dikeluarkan</label>
+                <div class="rp"><span>Rp</span><input type="text" id="jumlah-investasi" inputmode="numeric" placeholder="100.000" required enterkeyhint="done"></div>
+            </div>
+            <button type="submit" class="tombol ungu-bg">+ Simpan Investasi</button>
+        </form>
     </div>
-</nav>
+</div>
 
 <div id="modal" class="modal">
     <div class="modal-kotak">
@@ -369,16 +345,26 @@ input { -webkit-user-select: text; user-select: text; }
 const KUNCI_KAS = 'catatan_keuangan_v2';
 const KUNCI_HUTANG = 'catatan_hutang_v1';
 const KUNCI_INVESTASI = 'catatan_investasi_v1';
-const DAFTAR_TAB = ['kas', 'hutang', 'investasi', 'data'];
+const DAFTAR_TAB = ['kas', 'hutang', 'investasi'];
+const PIN_AKSES = '1111';
+const BATAS_KUNCI_ULANG = 60000;
 
 let dataTransaksi = [];
 let dataHutang = [];
 let dataInvestasi = [];
+let tabAktif = 'kas';
 let jenisTerpilih = 'pemasukan';
 let jenisHutangTerpilih = 'hutang';
 let aksiKonfirmasi = null;
-let promptPasang = null;
 let timerToast = null;
+let pinMasuk = '';
+let terbuka = false;
+let waktuSembunyi = 0;
+
+const elKunci = document.getElementById('kunci');
+const elApp = document.getElementById('app');
+const elTitikPin = document.getElementById('titik-pin');
+const elLapis = document.getElementById('lapis');
 
 const form = document.getElementById('form-transaksi');
 const inputKeterangan = document.getElementById('keterangan');
@@ -391,7 +377,6 @@ const emptyState = document.getElementById('empty-state');
 const btnReset = document.getElementById('btn-reset');
 const elTotalMasuk = document.getElementById('total-masuk');
 const elTotalKeluar = document.getElementById('total-keluar');
-const elSisaSaldo = document.getElementById('sisa-saldo');
 
 const formHutang = document.getElementById('form-hutang');
 const inputNamaHutang = document.getElementById('nama-hutang');
@@ -402,9 +387,7 @@ const btnSubmitHutang = document.getElementById('btn-submit-hutang');
 const listHutang = document.getElementById('daftar-hutang');
 const emptyStateHutang = document.getElementById('empty-state-hutang');
 const btnResetHutang = document.getElementById('btn-reset-hutang');
-const elTotalHutangSaya = document.getElementById('total-hutang-saya');
 const elTotalPiutangSaya = document.getElementById('total-piutang-saya');
-const elSelisihHutang = document.getElementById('selisih-hutang');
 
 const formInvestasi = document.getElementById('form-investasi');
 const inputNamaInvestasi = document.getElementById('nama-investasi');
@@ -412,8 +395,9 @@ const inputJumlahInvestasi = document.getElementById('jumlah-investasi');
 const listInvestasi = document.getElementById('daftar-investasi');
 const emptyStateInvestasi = document.getElementById('empty-state-investasi');
 const btnResetInvestasi = document.getElementById('btn-reset-investasi');
-const elTotalInvestasi = document.getElementById('total-investasi');
 const elJumlahAset = document.getElementById('jumlah-aset');
+const elChipAset = document.getElementById('chip-aset');
+const elPetunjukInvestasi = document.getElementById('petunjuk-investasi');
 
 function buatId() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -430,11 +414,7 @@ function esc(teks) {
 }
 
 function formatRupiah(angka) {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        maximumFractionDigits: 0
-    }).format(angka);
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
 }
 
 function bacaAngka(input) {
@@ -450,9 +430,73 @@ function tampilkanToast(pesan) {
     timerToast = setTimeout(function () { el.classList.remove('tampil'); }, 2200);
 }
 
-function getar(ms) {
-    if (navigator.vibrate) navigator.vibrate(ms);
+function getar(pola) {
+    if (navigator.vibrate) navigator.vibrate(pola);
 }
+
+function gambarTitikPin() {
+    const titik = elTitikPin.querySelectorAll('.titik');
+    titik.forEach(function (el, i) { el.classList.toggle('isi', i < pinMasuk.length); });
+}
+
+function tekanPin(angka) {
+    if (pinMasuk.length >= 4) return;
+    pinMasuk += angka;
+    gambarTitikPin();
+    getar(8);
+    if (pinMasuk.length === 4) setTimeout(periksaPin, 120);
+}
+
+function hapusPin() {
+    pinMasuk = pinMasuk.slice(0, -1);
+    gambarTitikPin();
+}
+
+function periksaPin() {
+    if (pinMasuk === PIN_AKSES) {
+        bukaAplikasi();
+        return;
+    }
+    getar([60, 40, 60]);
+    elTitikPin.classList.add('goyang');
+    setTimeout(function () {
+        elTitikPin.classList.remove('goyang');
+        pinMasuk = '';
+        gambarTitikPin();
+    }, 450);
+}
+
+function bukaAplikasi() {
+    terbuka = true;
+    pinMasuk = '';
+    gambarTitikPin();
+    elKunci.classList.add('tersembunyi');
+    elApp.classList.remove('tersembunyi');
+}
+
+function kunciAplikasi() {
+    terbuka = false;
+    pinMasuk = '';
+    gambarTitikPin();
+    tutupForm();
+    tutupKonfirmasi();
+    elApp.classList.add('tersembunyi');
+    elKunci.classList.remove('tersembunyi');
+}
+
+document.addEventListener('keydown', function (e) {
+    if (terbuka) return;
+    if (e.key >= '0' && e.key <= '9') tekanPin(e.key);
+    else if (e.key === 'Backspace') hapusPin();
+});
+
+document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+        waktuSembunyi = Date.now();
+    } else if (terbuka && Date.now() - waktuSembunyi > BATAS_KUNCI_ULANG) {
+        kunciAplikasi();
+    }
+});
 
 function konfirmasi(judul, pesan, teksYa, aksi) {
     document.getElementById('modal-judul').textContent = judul;
@@ -478,13 +522,36 @@ document.getElementById('modal-ya').addEventListener('click', function () {
 });
 
 function pilihTab(tab) {
+    tabAktif = tab;
     DAFTAR_TAB.forEach(function (nama) {
         document.getElementById('section-' + nama).classList.toggle('aktif', nama === tab);
         document.getElementById('tab-' + nama).classList.toggle('aktif', nama === tab);
     });
-    window.scrollTo({ top: 0, behavior: 'auto' });
-    if (tab === 'data') perbaruiInfoData();
 }
+
+function bukaForm() {
+    const judul = { kas: 'Tambah Transaksi', hutang: 'Tambah Hutang / Piutang', investasi: 'Tambah Investasi' };
+    document.getElementById('judul-form').textContent = judul[tabAktif];
+    form.classList.toggle('tersembunyi', tabAktif !== 'kas');
+    formHutang.classList.toggle('tersembunyi', tabAktif !== 'hutang');
+    formInvestasi.classList.toggle('tersembunyi', tabAktif !== 'investasi');
+    if (tabAktif === 'investasi') {
+        gambarChipAset();
+        perbaruiPetunjukInvestasi();
+    }
+    elLapis.classList.add('tampil');
+    const fokus = { kas: inputKeterangan, hutang: inputNamaHutang, investasi: inputNamaInvestasi };
+    setTimeout(function () { fokus[tabAktif].focus(); }, 250);
+}
+
+function tutupForm() {
+    elLapis.classList.remove('tampil');
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+}
+
+elLapis.addEventListener('click', function (e) {
+    if (e.target === this) tutupForm();
+});
 
 function pilihJenis(jenis) {
     jenisTerpilih = jenis;
@@ -515,6 +582,41 @@ attachThousandSeparator(inputJumlah);
 attachThousandSeparator(inputJumlahHutang);
 attachThousandSeparator(inputJumlahInvestasi);
 
+function cariAset(nama) {
+    const kunci = nama.trim().toLowerCase();
+    if (!kunci) return null;
+    return dataInvestasi.find(function (item) { return item.nama.trim().toLowerCase() === kunci; }) || null;
+}
+
+function gambarChipAset() {
+    elChipAset.innerHTML = dataInvestasi.map(function (item) {
+        return '<button type="button" class="chip" onclick="isiAset(\'' + item.id + '\')">' + esc(item.nama) + '</button>';
+    }).join('');
+    elChipAset.classList.toggle('tersembunyi', dataInvestasi.length === 0);
+}
+
+function isiAset(id) {
+    const item = dataInvestasi.find(function (v) { return v.id === id; });
+    if (!item) return;
+    inputNamaInvestasi.value = item.nama;
+    perbaruiPetunjukInvestasi();
+    inputJumlahInvestasi.focus();
+}
+
+function perbaruiPetunjukInvestasi() {
+    const nama = inputNamaInvestasi.value;
+    const ada = cariAset(nama);
+    if (ada) {
+        elPetunjukInvestasi.innerHTML = 'Ditambahkan ke <b>' + esc(ada.nama) + '</b> (sekarang ' + formatRupiah(ada.jumlah) + ')';
+    } else if (nama.trim()) {
+        elPetunjukInvestasi.textContent = 'Aset baru';
+    } else {
+        elPetunjukInvestasi.textContent = '';
+    }
+}
+
+inputNamaInvestasi.addEventListener('input', perbaruiPetunjukInvestasi);
+
 function bacaPenyimpanan(kunci) {
     try {
         const mentah = localStorage.getItem(kunci);
@@ -537,6 +639,23 @@ function simpanKeLocalStorage() {
     }
 }
 
+function gabungInvestasi() {
+    const peta = {};
+    const hasil = [];
+    dataInvestasi.forEach(function (item) {
+        item.nama = String(item.nama || '').trim();
+        item.jumlah = Number(item.jumlah) || 0;
+        const kunci = item.nama.toLowerCase();
+        if (peta[kunci]) {
+            peta[kunci].jumlah += item.jumlah;
+        } else {
+            peta[kunci] = item;
+            hasil.push(item);
+        }
+    });
+    dataInvestasi = hasil;
+}
+
 function rapikanData() {
     const petaIndeksHutang = {};
     dataHutang.forEach(function (item, i) {
@@ -552,6 +671,7 @@ function rapikanData() {
     dataInvestasi.forEach(function (item) {
         if (!item.id) item.id = buatId();
     });
+    gabungInvestasi();
 }
 
 function muatDariLocalStorage() {
@@ -563,6 +683,33 @@ function muatDariLocalStorage() {
     perbaruiTampilanKas();
     perbaruiTampilanHutang();
     perbaruiTampilanInvestasi();
+}
+
+function setNilaiDasbor(id, nilai) {
+    const el = document.getElementById(id);
+    el.textContent = formatRupiah(nilai);
+    el.classList.toggle('minus', nilai < 0);
+}
+
+function perbaruiDasbor() {
+    let masuk = 0;
+    let keluar = 0;
+    let hutang = 0;
+    let investasi = 0;
+
+    dataTransaksi.forEach(function (t) {
+        if (t.jenis === 'pemasukan') masuk += t.jumlah; else keluar += t.jumlah;
+    });
+    dataHutang.forEach(function (h) {
+        if (h.jenis === 'hutang' && !h.lunas) hutang += h.jumlah;
+    });
+    dataInvestasi.forEach(function (v) { investasi += v.jumlah; });
+
+    const saldo = masuk - keluar;
+    setNilaiDasbor('d-saldo', saldo);
+    setNilaiDasbor('d-hutang', hutang);
+    setNilaiDasbor('d-bersih', saldo - hutang);
+    setNilaiDasbor('d-investasi', investasi);
 }
 
 function perbaruiTampilanKas() {
@@ -588,25 +735,20 @@ function perbaruiTampilanKas() {
         listTransaksi.appendChild(li);
     });
 
-    const sisa = totalMasuk - totalKeluar;
     elTotalMasuk.textContent = formatRupiah(totalMasuk);
     elTotalKeluar.textContent = formatRupiah(totalKeluar);
-    elSisaSaldo.textContent = formatRupiah(sisa);
-    elSisaSaldo.classList.toggle('minus', sisa < 0);
+    perbaruiDasbor();
 }
 
 function perbaruiTampilanHutang() {
     listHutang.innerHTML = '';
-    let totalHutangSaya = 0;
-    let totalPiutangSaya = 0;
+    let totalPiutang = 0;
 
     emptyStateHutang.style.display = dataHutang.length === 0 ? 'block' : 'none';
 
     dataHutang.forEach(function (item) {
         const isHutang = item.jenis === 'hutang';
-        if (!item.lunas) {
-            if (isHutang) totalHutangSaya += item.jumlah; else totalPiutangSaya += item.jumlah;
-        }
+        if (!item.lunas && !isHutang) totalPiutang += item.jumlah;
 
         const li = document.createElement('li');
         li.className = 'baris';
@@ -624,27 +766,21 @@ function perbaruiTampilanHutang() {
         listHutang.appendChild(li);
     });
 
-    elTotalHutangSaya.textContent = formatRupiah(totalHutangSaya);
-    elTotalPiutangSaya.textContent = formatRupiah(totalPiutangSaya);
-    const selisih = totalPiutangSaya - totalHutangSaya;
-    elSelisihHutang.textContent = formatRupiah(selisih);
-    elSelisihHutang.classList.toggle('minus', selisih < 0);
+    elTotalPiutangSaya.textContent = formatRupiah(totalPiutang);
+    perbaruiDasbor();
 }
 
 function perbaruiTampilanInvestasi() {
     listInvestasi.innerHTML = '';
-    let total = 0;
 
     emptyStateInvestasi.style.display = dataInvestasi.length === 0 ? 'block' : 'none';
 
     dataInvestasi.forEach(function (item) {
-        total += item.jumlah;
-
         const li = document.createElement('li');
         li.className = 'baris';
         li.innerHTML =
             '<div class="ikon aset">◆</div>' +
-            '<div class="info"><div class="judul">' + esc(item.nama) + '</div><div class="sub">' + esc(item.tanggal) + '</div></div>' +
+            '<div class="info"><div class="judul">' + esc(item.nama) + '</div><div class="sub">Terakhir ditambah ' + esc(item.tanggal) + '</div></div>' +
             '<div class="sisi">' +
                 '<span class="jumlah ungu">' + formatRupiah(item.jumlah) + '</span>' +
                 '<button type="button" class="hapus" aria-label="Hapus" onclick="hapusInvestasi(\'' + item.id + '\')">✕</button>' +
@@ -652,14 +788,8 @@ function perbaruiTampilanInvestasi() {
         listInvestasi.appendChild(li);
     });
 
-    elTotalInvestasi.textContent = formatRupiah(total);
     elJumlahAset.textContent = dataInvestasi.length;
-}
-
-function perbaruiInfoData() {
-    document.getElementById('info-kas').textContent = dataTransaksi.length;
-    document.getElementById('info-hutang').textContent = dataHutang.length;
-    document.getElementById('info-investasi').textContent = dataInvestasi.length;
+    perbaruiDasbor();
 }
 
 form.addEventListener('submit', function (e) {
@@ -676,7 +806,7 @@ form.addEventListener('submit', function (e) {
 
     inputKeterangan.value = '';
     inputJumlah.value = '';
-    inputKeterangan.focus();
+    tutupForm();
 });
 
 formHutang.addEventListener('submit', function (e) {
@@ -693,7 +823,7 @@ formHutang.addEventListener('submit', function (e) {
 
     inputNamaHutang.value = '';
     inputJumlahHutang.value = '';
-    inputNamaHutang.focus();
+    tutupForm();
 });
 
 formInvestasi.addEventListener('submit', function (e) {
@@ -702,15 +832,26 @@ formInvestasi.addEventListener('submit', function (e) {
     const jumlah = bacaAngka(inputJumlahInvestasi);
     if (!nama || isNaN(jumlah) || jumlah <= 0) return;
 
-    dataInvestasi.unshift({ id: buatId(), nama: nama, jumlah: jumlah, tanggal: tanggalHariIni() });
+    const ada = cariAset(nama);
+    let pesan;
+    if (ada) {
+        ada.jumlah += jumlah;
+        ada.tanggal = tanggalHariIni();
+        dataInvestasi = [ada].concat(dataInvestasi.filter(function (v) { return v !== ada; }));
+        pesan = ada.nama + ' bertambah ' + formatRupiah(jumlah);
+    } else {
+        dataInvestasi.unshift({ id: buatId(), nama: nama, jumlah: jumlah, tanggal: tanggalHariIni() });
+        pesan = 'Aset baru ditambahkan';
+    }
+
     if (!simpanKeLocalStorage()) return;
     perbaruiTampilanInvestasi();
     getar(15);
-    tampilkanToast('Aset ditambahkan');
+    tampilkanToast(pesan);
 
     inputNamaInvestasi.value = '';
     inputJumlahInvestasi.value = '';
-    inputNamaInvestasi.focus();
+    tutupForm();
 });
 
 function toggleLunasHutang(id) {
@@ -772,7 +913,7 @@ function hapusHutang(id) {
 function hapusInvestasi(id) {
     const item = dataInvestasi.find(function (v) { return v.id === id; });
     if (!item) return;
-    konfirmasi('Hapus aset?', item.nama + ' akan dihapus dari portofolio.', 'Hapus', function () {
+    konfirmasi('Hapus aset?', item.nama + ' (' + formatRupiah(item.jumlah) + ') akan dihapus dari portofolio.', 'Hapus', function () {
         dataInvestasi = dataInvestasi.filter(function (v) { return v.id !== id; });
         simpanKeLocalStorage();
         perbaruiTampilanInvestasi();
@@ -813,124 +954,10 @@ btnResetInvestasi.addEventListener('click', function () {
     });
 });
 
-document.getElementById('btn-ekspor').addEventListener('click', function () {
-    const paket = {
-        aplikasi: 'catatan-keuangan',
-        versi: 1,
-        diekspor: new Date().toISOString(),
-        kas: dataTransaksi,
-        hutang: dataHutang,
-        investasi: dataInvestasi
-    };
-    const blob = new Blob([JSON.stringify(paket, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const stempel = new Date().toISOString().slice(0, 10);
-    a.href = url;
-    a.download = 'cadangan-keuangan-' + stempel + '.json';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-    tampilkanToast('Cadangan disimpan');
-});
-
-document.getElementById('btn-impor').addEventListener('click', function () {
-    document.getElementById('file-impor').click();
-});
-
-document.getElementById('file-impor').addEventListener('change', function (e) {
-    const berkas = e.target.files[0];
-    e.target.value = '';
-    if (!berkas) return;
-
-    const pembaca = new FileReader();
-    pembaca.onload = function () {
-        let paket;
-        try {
-            paket = JSON.parse(pembaca.result);
-        } catch (err) {
-            tampilkanToast('Berkas bukan cadangan yang valid');
-            return;
-        }
-        if (!paket || !Array.isArray(paket.kas) || !Array.isArray(paket.hutang) || !Array.isArray(paket.investasi)) {
-            tampilkanToast('Format cadangan tidak dikenali');
-            return;
-        }
-        konfirmasi('Pulihkan cadangan?', 'Data saat ini akan diganti dengan isi cadangan (' + paket.kas.length + ' kas, ' + paket.hutang.length + ' hutang, ' + paket.investasi.length + ' aset).', 'Pulihkan', function () {
-            dataTransaksi = paket.kas;
-            dataHutang = paket.hutang;
-            dataInvestasi = paket.investasi;
-            rapikanData();
-            simpanKeLocalStorage();
-            perbaruiTampilanKas();
-            perbaruiTampilanHutang();
-            perbaruiTampilanInvestasi();
-            perbaruiInfoData();
-            tampilkanToast('Data berhasil dipulihkan');
-        });
-    };
-    pembaca.readAsText(berkas);
-});
-
-function sudahTerpasang() {
-    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-}
-
-function perbaruiTampilanPasang() {
-    const btn = document.getElementById('btn-pasang');
-    const ios = document.getElementById('petunjuk-ios');
-    const status = document.getElementById('status-pasang');
-    const modeIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
-
-    if (sudahTerpasang()) {
-        status.textContent = 'Aplikasi sudah terpasang di perangkat ini.';
-        btn.classList.add('tersembunyi');
-        ios.classList.add('tersembunyi');
-        return;
-    }
-    btn.classList.toggle('tersembunyi', !promptPasang);
-    ios.classList.toggle('tersembunyi', !modeIos);
-    if (!promptPasang && !modeIos) {
-        status.textContent = 'Buka menu browser lalu pilih Instal Aplikasi atau Tambahkan ke Layar Utama.';
-    }
-}
-
-window.addEventListener('beforeinstallprompt', function (e) {
-    e.preventDefault();
-    promptPasang = e;
-    perbaruiTampilanPasang();
-});
-
-window.addEventListener('appinstalled', function () {
-    promptPasang = null;
-    perbaruiTampilanPasang();
-    tampilkanToast('Aplikasi berhasil dipasang');
-});
-
-document.getElementById('btn-pasang').addEventListener('click', function () {
-    if (!promptPasang) return;
-    promptPasang.prompt();
-    promptPasang.userChoice.then(function () {
-        promptPasang = null;
-        perbaruiTampilanPasang();
-    });
-});
-
 function mintaPenyimpananPermanen() {
-    const el = document.getElementById('info-persist');
-    if (!navigator.storage || !navigator.storage.persist) {
-        el.textContent = 'Tidak didukung';
-        return;
+    if (navigator.storage && navigator.storage.persist) {
+        navigator.storage.persist().catch(function () {});
     }
-    navigator.storage.persisted().then(function (sudah) {
-        if (sudah) return true;
-        return navigator.storage.persist();
-    }).then(function (hasil) {
-        el.textContent = hasil ? 'Aktif' : 'Standar';
-    }).catch(function () {
-        el.textContent = 'Standar';
-    });
 }
 
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -941,7 +968,6 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 
 window.onload = function () {
     muatDariLocalStorage();
-    perbaruiTampilanPasang();
     mintaPenyimpananPermanen();
 };
 </script>
